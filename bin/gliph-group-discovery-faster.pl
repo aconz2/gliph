@@ -213,6 +213,20 @@ if(-f $clone_network){
   my @h3s=keys %unique_h3s; # monkey
   my %is_networked=(); # a hash of clones that have been networked. To be used
                        # for cleaning up the un-networked clones
+
+  # precompute matches for every sequence and motif
+  my @motif_matches = ();  # of shape [#sequences, #motifs]
+  for (my $i = 0; $i < $nseqs; $i++) {
+      my @matches = ();
+      for(my $m=0;$m<scalar(@local_motifs);$m++){
+          if($use_structural_boundaries) {
+              push @matches, $h3s[$i]=~m/...$local_motifs[$m].../ || 0;
+          } else {
+              push @matches, $h3s[$i]=~m/$local_motifs[$m]/ || 0;
+          }
+      }
+      push @motif_matches, [ @matches ];
+  }
   # for every sequence
   for(my $x=0;$x<$nseqs;$x++){
     # output
@@ -239,24 +253,10 @@ if(-f $clone_network){
           # LOCAL SEARCH
           # for each motif. if motif is found in both sequences
           for(my $m=0;$m<scalar(@local_motifs);$m++){
-            my $h3a=$h3s[$x];
-            my $h3b=$h3s[$y];
-            if($use_structural_boundaries){
-              if(  ($h3s[$x]=~m/...$local_motifs[$m].../)
-                 and
-                ($h3s[$y]=~m/...$local_motifs[$m].../)){
+            if($motif_matches[$x][$m] and $motif_matches[$y][$m]){
                 $is_networked{$h3s[$x]}=1;
                 $is_networked{$h3s[$y]}=1;
                 print NETWORK $h3s[$x] . "\t" . $h3s[$y] . "\tlocal\n";
-              }
-            }else{
-              if(  ($h3s[$x]=~m/$local_motifs[$m]/)
-                 and
-                ($h3s[$y]=~m/$local_motifs[$m]/)){
-                $is_networked{$h3s[$x]}=1;
-                $is_networked{$h3s[$y]}=1;
-                print NETWORK $h3s[$x] . "\t" . $h3s[$y] . "\tlocal\n";
-              }
             }
           }
         }
@@ -404,6 +404,13 @@ sub analyzeKmerLog {
   print LOG "Motif\tCounts\tavgRef\ttopRef\tOvE\tp-value\n";
   print "Motif\tCounts\tavgRef\ttopRef\tOvE\tp-value\n";
 
+
+  # parse lines of sim once upfront
+  my @fields_array = (0, 0);  # 2 zeros as placeholders to not interfere with the existing indexing
+  for(my $sim=2;$sim<scalar(@lines);$sim++){
+      push @fields_array, [ split(/ /,$lines[$sim]) ];
+  }
+
   for(my $m=1;$m<scalar(@motifs);$m++){
 
     # get number of simulations at the level observed in discovery sample
@@ -413,14 +420,13 @@ sub analyzeKmerLog {
     my $average=0;
     my $odds_as_enriched_as_discovery=0;
     for(my $sim=2;$sim<scalar(@lines);$sim++){
-      my @fields=split(/ /,$lines[$sim]);
-      if($fields[$m]>=$discovery_sample_counts[$m]){
+      if($fields_array[$sim][$m]>=$discovery_sample_counts[$m]){
         $odds_as_enriched_as_discovery += 1/$simdepth;
       }
-      if($fields[$m]>$highest){
-        $highest=$fields[$m];
+      if($fields_array[$sim][$m]>$highest){
+        $highest=$fields_array[$sim][$m];
       }
-      $average += ($fields[$m]/(scalar(@lines)-2));
+      $average += ($fields_array[$sim][$m]/(scalar(@lines)-2));
     }
 
     # get observed vs expected
