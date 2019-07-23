@@ -9,14 +9,14 @@ BEGIN{
 use lib "$rootdir/lib";
 use strict;
 use warnings;
-  
-print "\nGLIPH - Grouping Lymphocyte Interfaces by Paratope Hotspots\n"; 
+
+print "\nGLIPH - Grouping Lymphocyte Interfaces by Paratope Hotspots\n";
 print "GLIPH-1.0rc\n";
-print "\nAn algorithm for statistical clustering of adaptive repertoire convergence\n"; 
+print "\nAn algorithm for statistical clustering of adaptive repertoire convergence\n";
 print "Contact: Jacob Glanville (jakeg\@stanford.edu)\n\n";
 
 ################################## Arguments ###################################
- 
+
 my ($textfile,$refdb,$globalConverganceCutoff,
     $localConvergenceMotifList,$samplingDepth,$motif_minp,
     $motif_min_foldchange,$kmer_mindepth,
@@ -32,7 +32,7 @@ my %unique_h3s=();				     # convert all inputs to
                                                      # if multiple subjects contribute
 						     # then optionally that motif
 						     # can be enriched
- 
+
 my $corename="cag";                                  # corename prefix for
 						     # output files
 
@@ -46,7 +46,7 @@ my %refdb_hash_h3s=();				     # initialize the reference
 my @refdb_unique_h3s=();			     # database data structures
 my $refdb_nseqs=0;				     # but keep empty unless
 my %refdb_kmers=();			             # performing simulations
-my @testset_redundant_nseqs=loadtextDBRedundantArray($textfile); 
+my @testset_redundant_nseqs=loadtextDBRedundantArray($textfile);
 						     # loading number of redundant clones into an array
 my $nseqs = scalar(keys %unique_h3s);		     # count the number of CDR3s
 my $nseqs_redundant = scalar(@testset_redundant_nseqs);
@@ -69,7 +69,7 @@ my $convergence_table       = $corename . "-convergence-groups.txt";
 my $global_similarity_table = $corename . "-global-similarity.txt";
 
 unless(-f $localConvergenceMotifList){
-  $localConvergenceMotifList = $corename . "-kmer_resample_" . $samplingDepth . "_minp" 
+  $localConvergenceMotifList = $corename . "-kmer_resample_" . $samplingDepth . "_minp"
                              . $motif_minp . "_ove" . $motif_min_foldchange . ".txt";
 }
 
@@ -114,7 +114,7 @@ if($global){
 #6000 0.05694 0.23055 0.32172
     # nseqs<125 = 0.01, nseqs<650 = 0.05, nseqs<1000 = 0.01, nseqs<5500 = 0.05
     if($nseqs<125){
-      $globalConverganceCutoff=2; 
+      $globalConverganceCutoff=2;
     }else{
       $globalConverganceCutoff=1;
     }
@@ -140,11 +140,11 @@ if($local){
     my @sample_kmer_array=keys %sample_kmers;
     print "  kmers obtained:             " . scalar(@sample_kmer_array) . "\n";
     my @sample_highcount_kmer_array = getMinDepthKmerArray(\%sample_kmers,$kmer_mindepth);
-    print "  mindepth>=$kmer_mindepth kmers obtained: " . scalar(@sample_highcount_kmer_array) . "\n"; 
+    print "  mindepth>=$kmer_mindepth kmers obtained: " . scalar(@sample_highcount_kmer_array) . "\n";
 
     # print kmer scores to the kmer subsampling log
     appendToKmerLog(\@sample_highcount_kmer_array,\%sample_kmers,"Discovery",$kmer_sim_log);
- 
+
     # load the reference database
     if(scalar(@refdb_unique_h3s)>0){
       print "  reference db has already been loaded\n";
@@ -155,7 +155,7 @@ if($local){
       $refdb_nseqs=scalar(@refdb_unique_h3s);
       print "  Getting reference db kmers\n";
       %refdb_kmers=getAllKmerLengths(\@refdb_unique_h3s,$discontinuous,$use_structural_boundaries);
-    } 
+    }
 
     # for elevated motifs, run 1000 simulations to determine how often they are
     # as elevated as observed from a random sampling
@@ -177,7 +177,7 @@ if($local){
     print "\n";
     analyzeKmerLog($kmer_sim_log,$localConvergenceMotifList,$samplingDepth,
                    $nseqs,$motif_min_foldchange,$motif_minp,\%refdb_kmers,$refdb_nseqs);
- 
+
   }else{
     print "Received local convergence motifs file\n";
     print "  $localConvergenceMotifList as input\n";
@@ -189,7 +189,7 @@ if($local){
   #my @local_motifs=();
   my @motif_file_lines=<FILE>;
   chomp(@motif_file_lines);
-  close(FILE); 
+  close(FILE);
   for(my $x=0;$x<scalar(@motif_file_lines);$x++){
     print $motif_file_lines[$x] . "\n";
     my @fields=split(/\t/,$motif_file_lines[$x]);
@@ -242,8 +242,8 @@ if(-f $clone_network){
             my $h3a=$h3s[$x];
             my $h3b=$h3s[$y];
             if($use_structural_boundaries){
-              if(  ($h3s[$x]=~m/...$local_motifs[$m].../) 
-                 and 
+              if(  ($h3s[$x]=~m/...$local_motifs[$m].../)
+                 and
                 ($h3s[$y]=~m/...$local_motifs[$m].../)){
                 $is_networked{$h3s[$x]}=1;
                 $is_networked{$h3s[$y]}=1;
@@ -278,7 +278,7 @@ if(-f $clone_network){
 
 # last part, generating lists of clones in each convergence group
 # open the network file, iterate until complete
-# if a vdjfasta file, gather those details as well 
+# if a vdjfasta file, gather those details as well
 print "Analysing network to report convergence groups\n";
 open(NETWORK,$clone_network);
 my @lines=<NETWORK>;
@@ -316,18 +316,18 @@ for(my $x=0;$x<scalar(@unique_cdrs);$x++){
   unless(defined($is_assigned{$unique_cdrs[$x]})){
     #print "Initialize Convergence Group " . $unique_cdrs[$x] . ": ";
     $convergence_groups{$unique_cdrs[$x]}=$unique_cdrs[$x];
-    $is_assigned{$unique_cdrs[$x]}=1; 
+    $is_assigned{$unique_cdrs[$x]}=1;
 
     # iterate until no new clones are found. recursion?
     my %current_clones=();
     my %convergence_group_clone_hash=recursiveSingleLinkage($unique_cdrs[$x],\%current_clones,\%all_connections_per_clone);
     my @convergence_group_clone_list=keys %convergence_group_clone_hash;
-    print CONVERGE scalar(@convergence_group_clone_list) . "\tCRG-" . $unique_cdrs[$x] 
+    print CONVERGE scalar(@convergence_group_clone_list) . "\tCRG-" . $unique_cdrs[$x]
           . "\t" . $convergence_group_clone_list[0];
     print scalar(@convergence_group_clone_list) . "\tCRG-" . $unique_cdrs[$x]
           . "\t" . $convergence_group_clone_list[0];
     $is_assigned{$convergence_group_clone_list[0]}=1;
-    
+
     for(my $c=1;$c<scalar(@convergence_group_clone_list);$c++){
       print CONVERGE " " . $convergence_group_clone_list[$c];
       print " " . $convergence_group_clone_list[$c];
@@ -366,13 +366,13 @@ sub recursiveSingleLinkage {
 
   $$current_clones{$seed_clone}=1;
 
-  # grab this clones connections. If any of them are new, grab their 
+  # grab this clones connections. If any of them are new, grab their
   # connections and add them to the pile
-  my @redundant_clones=split(/ /,$$all_connections_per_clone{$seed_clone}); 
+  my @redundant_clones=split(/ /,$$all_connections_per_clone{$seed_clone});
   my %new_unique_clones=();
   for(my $x=0;$x<scalar(@redundant_clones);$x++){
     $new_unique_clones{$redundant_clones[$x]}=1;
-  } 
+  }
   my @new_unique_clone_array=keys %new_unique_clones;
 
   # recurse if any new unique clones are found
@@ -380,8 +380,8 @@ sub recursiveSingleLinkage {
     # if this is a new clone
     if(!defined($$current_clones{$new_unique_clone_array[$x]})){
       my %get_new_unique_clones=recursiveSingleLinkage($new_unique_clone_array[$x],\%$current_clones,\%$all_connections_per_clone);
-      %$current_clones=(%$current_clones,%get_new_unique_clones); 
-    }  
+      %$current_clones=(%$current_clones,%get_new_unique_clones);
+    }
   }
   return %$current_clones;
 }
@@ -395,13 +395,13 @@ sub analyzeKmerLog {
   my @lines=<FILE>;
   chomp(@lines);
   close(FILE);
- 
+
   #my $simdepth=scalar(@lines) - 2;
 
   my @motifs=split(/ /,$lines[0]);
   my @discovery_sample_counts=split(/ /,$lines[1]);
- 
-  print LOG "Motif\tCounts\tavgRef\ttopRef\tOvE\tp-value\n"; 
+
+  print LOG "Motif\tCounts\tavgRef\ttopRef\tOvE\tp-value\n";
   print "Motif\tCounts\tavgRef\ttopRef\tOvE\tp-value\n";
 
   for(my $m=1;$m<scalar(@motifs);$m++){
@@ -432,10 +432,10 @@ sub analyzeKmerLog {
       $ove = 1 / ($simdepth * $seqspersim);
       #$ove=">" . $discovery_sample_counts[$m];
     }
-    $ove=( int($ove * 1000) / 1000);   
+    $ove=( int($ove * 1000) / 1000);
     $average=( int($average * 100) / 100);
     # calculate fisher's exact by generating a confusion matrix
-    # of (counts in $seqspersim) vs ( $$refdb_kmers{kmer} in $refdb_nseqs) 
+    # of (counts in $seqspersim) vs ( $$refdb_kmers{kmer} in $refdb_nseqs)
     #               motif    !motif
     #  discovery    n11      n12   | n1p
     #  refdb        n21      n22   | n2p
@@ -455,7 +455,7 @@ sub analyzeKmerLog {
     #                                     n1p=>$n1p,
     #                                     np1=>$np1,
     #                                     npp=>$npp);
-  
+
     if($odds_as_enriched_as_discovery<$minp){
       if($odds_as_enriched_as_discovery == 0){
         $odds_as_enriched_as_discovery=(1/$simdepth);
@@ -463,12 +463,12 @@ sub analyzeKmerLog {
       my $this_minfoldchange=motifMinFoldPerCounts($discovery_sample_counts[$m]);
       # if($ove>=$minfoldchange){
       if($ove>=$this_minfoldchange){ #$minfoldchange){
-        print LOG        $motifs[$m] 
-          . "\t" . $discovery_sample_counts[$m] 
+        print LOG        $motifs[$m]
+          . "\t" . $discovery_sample_counts[$m]
           . "\t" . $average
           . "\t" . $highest
           . "\t" . $ove
-          . "\t" . $odds_as_enriched_as_discovery 
+          . "\t" . $odds_as_enriched_as_discovery
           . "\n"; #. "\tfisher=$left_value\n";
         print        $motifs[$m]
           . "\t" . $discovery_sample_counts[$m]
@@ -486,7 +486,7 @@ sub analyzeKmerLog {
 sub appendToKmerLog {
   my($sample_highcount_kmer_array,$sample_kmers,$label,$kmer_sim_log)=@_;
   if($label eq "Discovery"){
-    open(LOG,">$kmer_sim_log");			  
+    open(LOG,">$kmer_sim_log");
     print LOG "Sample";
     for(my $x=0;$x<scalar(@$sample_highcount_kmer_array);$x++){
       print LOG " " . $$sample_highcount_kmer_array[$x];
@@ -517,7 +517,7 @@ sub getGlobalConvergenceDistribution {
   my @counts=(0,0,0,0,0, 0,0,0,0,0,
               0,0,0,0,0, 0,0,0,0,0,
               0,0,0,0,0, 0,0,0,0,0,
-              0,0,0,0,0, 0,0,0,0,0); 
+              0,0,0,0,0, 0,0,0,0,0);
   for(my $x=0;$x<scalar(@$sequences);$x++){
     my $distance=length($$sequences[$x]);
     for(my $y=0;$y<scalar(@$sequences);$y++){
@@ -527,12 +527,12 @@ sub getGlobalConvergenceDistribution {
           if($this_dist<$distance){
             $distance=$this_dist;
           }
-        } 
+        }
       }
     }
     $counts[$distance]++;
   }
-  
+
   # print the result
   print $samplename;
   print FILE $samplename;
@@ -542,7 +542,7 @@ sub getGlobalConvergenceDistribution {
   }
   print "\n";
   print FILE "\n";
-  return @counts; 
+  return @counts;
 
   close(FILE);
 }
@@ -569,7 +569,7 @@ sub getMinDepthKmerArray {
   for(my $x=0;$x<scalar(@all_kmers);$x++){
     if($$kmer_hash{$all_kmers[$x]}>=$mindepth){
       push @selected_kmers,$all_kmers[$x];
-    }   
+    }
   }
   return @selected_kmers;
 }
@@ -645,7 +645,7 @@ sub getContactDist {
 
   my $alignable_columns=0;
   my $mismatch_columns=0;
- 
+
   for(my $c=0;$c<scalar(@chars1);$c++){
     if($chars1[$c] =~ m/[A-Z]/){
       if($chars2[$c] =~ m/[A-Z]/){
@@ -667,7 +667,7 @@ sub randomSubsample {
   my($array,$depth,$length_stratification,$testset_array)=@_;
   my @id_array=();
   my @random_subsample=();
- 
+
   unless(defined($depth)){
     $depth=scalar(@$array);
   }
@@ -694,10 +694,10 @@ sub randomSubsample {
           push @random_subsample,$$array[$s];
           $cdr3lengths[$thiscdr3len]-=1;
         }
-        $s+=1; 
+        $s+=1;
       }
-    }  
-    #exit; # MONKEY 
+    }
+    #exit; # MONKEY
   }else{
 
     for(my $s=0;$s<$depth;$s++){
@@ -729,7 +729,7 @@ sub getAllKmerLengths {
     my %sample_xxox4mers=getKmers(\@$unique_cdrs,"xx.x",$use_structural_boundaries);
     my %sample_xoxx4mers=getKmers(\@$unique_cdrs,"x.xx",$use_structural_boundaries);
     %sample_kmers=(%sample_2mers,%sample_3mers,%sample_4mers,%sample_xxox4mers,%sample_xoxx4mers);
-  }else{ 
+  }else{
     %sample_kmers=(%sample_2mers,%sample_3mers,%sample_4mers); #,%sample_xxox4mers,%sample_xoxx4mers);
   }
 
@@ -747,9 +747,9 @@ sub getKmers {
        $seq=~s/^...//;
        $seq=~s/...$//;
     }
-   
+
     my $length = length($seq);
-    
+
     # dealing with x.x, x..x, or x...x
     my $mask=0;
     if($mask_type =~ m/x/){
@@ -807,7 +807,7 @@ sub GatherOptions {
   my $discontinuous             = 0; # allow discontinuous motifs
   my $positional_motifs         = 0; # fix motif positions N-terminlally
   my $cdr3len_stratify          = 0; # stratify by CDR3 length
-  my $vgene_constrain           = 0; # limit to dominant V-gene in each GLIPH cluster   
+  my $vgene_constrain           = 0; # limit to dominant V-gene in each GLIPH cluster
   my $public_tcrs               = 0; # recount public clones
   my $use_structural_boundaries = 1; # should we ignore the first and last few residues of CDR3?
   my $length_stratification     = 0; # apply length stratification to match length
@@ -852,8 +852,8 @@ sub GatherOptions {
     print "                         expected fold change (10 by default).\n";
     print "  --kmer_mindepth=3      Minimum observations of kmer for it to\n";
     print "                         be evaluated\n";
-    
-    print "  --global=1             Search for global TCR similarity (Default 1)\n"; 
+
+    print "  --global=1             Search for global TCR similarity (Default 1)\n";
     print "  --local=1              Search for local TCR similarity (Default 1)\n";
     print "  --make_depth_fig=0     Perform repeat random samplings at the test\n";
     print "                         set depth in order to visualize convergence\n";
@@ -886,5 +886,3 @@ sub stripFastaSuffix {
    $corename=~s/.fna$//;
    return $corename;
 }
-
-
