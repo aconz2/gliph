@@ -1,9 +1,9 @@
 This repo contains some simple changes to improve the speed of [gliph](https://github.com/immunoengineer/gliph)
 
-The faster version is located (gliph-group-discovery-faster.pl)[bin/gliph-group-discovery-faster.pl]
+The faster version is located [gliph-group-discovery-faster.pl](bin/gliph-group-discovery-faster.pl)
 
 # Improvements
-See (this commit)[https://github.com/aconz2/gliph/commit/bea1a556f0c3bce2d13f6cc7106c567cbb12c3f5] for the diff.
+See [this commit](https://github.com/aconz2/gliph/commit/bea1a556f0c3bce2d13f6cc7106c567cbb12c3f5) for the diff.
 
 The 2 improvements just precompute data outside of their respective "main" loops instead of recomputing on every iteration.
 
